@@ -9,6 +9,7 @@ from functools import wraps
 DATA_PATH = "data_10.json"
 
 
+
 def log(before, after):
     def decorator(function):
         @wraps(function)
