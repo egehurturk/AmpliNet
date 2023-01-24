@@ -3,6 +3,7 @@ from tensorflow import keras
 import numpy as np
 import os
 import pickle
+import matplotlib.pyplot as plt
 
 
 class Autoencoder:
@@ -30,8 +31,8 @@ class Autoencoder:
         self._build()
 
     def summary(self):
-        # self.encoder.summary()
-        # self.decoder.summary()
+        self.encoder.summary()
+        self.decoder.summary()
         self.model.summary()
 
     def compile(self, lr=0.0001):
@@ -46,6 +47,11 @@ class Autoencoder:
                        batch_size = batch_size, 
                        epochs = epochs,
                        shuffle = True) 
+
+    def reconstruct(self, image):
+        latent_representations = self.encoder.predict(image)
+        reconstructed_images = self.decoder.predict(latent_representations)
+        return reconstructed_images, latent_representations
 
     def save(self, folder="."):
         if not os.path.exists(folder):
@@ -184,38 +190,74 @@ class Autoencoder:
         return layer
         
 def load_mnist():
-    (X_train, y_train), (X_test, y_test) = keras.datasets.mnist.load_data()
-    X_train = X_train.astype("float32") / 255
-    X_train = X_train.reshape(X_train.shape + (1,))
+    (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
+    x_train = x_train.astype("float32") / 255
+    x_train = x_train.reshape(x_train.shape + (1,))
+    x_test = x_test.astype("float32") / 255
+    x_test = x_test.reshape(x_test.shape + (1,))
 
-    X_test = X_test.astype("float32") / 255
-    X_test = X_test.reshape(X_test.shape + (1,))
+    return x_train, y_train, x_test, y_test
 
-    return X_train, y_train, X_test, y_test
+def plot_reconstructed_images(images, reconstructed_images):
+    fig = plt.figure(figsize=(15, 3))
+    num_images = len(images)
+    for i, (image, reconstructed_image) in enumerate(zip(images, reconstructed_images)):
+        image = image.squeeze()
+        ax = fig.add_subplot(2, num_images, i + 1)
+        ax.axis("off")
+        ax.imshow(image, cmap="gray_r")
+        reconstructed_image = reconstructed_image.squeeze()
+        ax = fig.add_subplot(2, num_images, i + num_images + 1)
+        ax.axis("off")
+        ax.imshow(reconstructed_image, cmap="gray_r")
+    plt.show()
 
+def select_images(images, labels, num_images=10):
+    sample_images_index = np.random.choice(range(len(images)), num_images)
+    sample_images = images[sample_images_index]
+    sample_labels = labels[sample_images_index]
+    return sample_images, sample_labels
+
+def plot_images_encoded_in_latent_space(latent_representations, sample_labels):
+    plt.figure(figsize=(10, 10))
+    plt.scatter(latent_representations[:, 0],
+                latent_representations[:, 1],
+                cmap="rainbow",
+                c=sample_labels,
+                alpha=0.5,
+                s=2)
+    plt.colorbar()
+    plt.show()
 
 if __name__ == "__main__":
 
-    X_train, _, x_test, _ = load_mnist()
+    X_train, y_train, x_test, y_test = load_mnist()
+
 
     LR = 0.0005
     BATCH_SIZE = 32
     EPOCHS = 20
 
-    ae = Autoencoder(
-        "Autoencoder_EGE",
-        input_shape=(28, 28, 1),
-        conv_filters=(32, 64, 64, 64),
-        conv_kernels=(3, 3, 3, 3), 
-        conv_strides=(1, 2, 2, 1),
-        code_size=2
-    )
-    ae.summary()
-    ae.compile(lr=LR)
-    ae.train(X_train[:500], batch_size=BATCH_SIZE, epochs=EPOCHS)
+    # ae = Autoencoder(
+    #     "Autoencoder_EGE",
+    #     input_shape=(28, 28, 1),
+    #     conv_filters=(32, 64, 64, 64),
+    #     conv_kernels=(3, 3, 3, 3), 
+    #     conv_strides=(1, 2, 2, 1),
+    #     code_size=2
+    # )
+    # ae.summary()
+    # ae.compile(lr=LR)
+    # ae.train(X_train[:10000], batch_size=BATCH_SIZE, epochs=EPOCHS)
+    # ae.save("ae_model")
 
-    ae.save("ae_model")
+    ae = Autoencoder.load("ae_model")
+    
+    sample, labels = select_images(x_test, y_test, 12)
+    print(sample.shape)
 
-    ae2 = Autoencoder.load("ae_model")
-    ae2.summary()
+    re_im, lat_rep = ae.reconstruct(sample)
+    plot_reconstructed_images(sample, re_im)
+    plot_images_encoded_in_latent_space(lat_rep, labels)
+
     
