@@ -1,0 +1,12 @@
+download: https://www.kaggle.com/datasets/joserzapata/free-spoken-digit-dataset-fsdd
+
+
+folder structure:
+
+data/
+    audio/ 
+        ...
+    spectograms/
+        ...
+    min_max/
+        ...
