@@ -6,7 +6,7 @@ import argparse
 import numpy as np
 import math
 from model import PedalNet
-
+import librosa
 
 def save(name, data):
     wavfile.write(name, 44100, data.flatten().astype(np.int16))
@@ -35,14 +35,18 @@ def greedy_split(arr, n, axis=0):
 
 @torch.no_grad()
 def predict(args):
+
     model = PedalNet.load_from_checkpoint(args.model)
     model.eval()
+    
     train_data = pickle.load(open(args.train_data, "rb"))
 
     mean, std = train_data["mean"], train_data["std"]
 
-    in_rate, in_data = wavfile.read(args.input)
-    assert in_rate == 44100, "input data needs to be 44.1 kHz"
+    in_data, in_rate = librosa.load(args.input, sr=44100)
+    
+    assert in_rate == 44100, f"input data needs to be 44.1 kHz, current sampling rate is {in_rate}"
+
     sample_size = int(in_rate * args.sample_time)
     length = len(in_data) - len(in_data) % sample_size
 
