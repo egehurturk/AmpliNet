@@ -1,9 +1,11 @@
 import librosa, librosa.display
 import matplotlib .pyplot as plt
 import numpy as np
+from pathlib import Path
 
+dir_path = Path(__file__).parent.absolute()
 
-file = "blues.00000.wav"
+file =  str(dir_path) + "/blues.00000.wav"
 n_fft = 2048 
 hop_length = 512
 n_mfcc = 13
@@ -60,5 +62,5 @@ if __name__ == "__main__":
     spec = stft(signal)[1]
     log_spec = log_spectogram(spec)
     mfccs = mfcc(signal)
-    # plot_spectogram(log_spec, sr, "Time", "Frequency")
+    plot_spectogram(log_spec, sr, "Time", "Frequency")
     plot_spectogram(mfccs, sr, "Time", "MFCC")

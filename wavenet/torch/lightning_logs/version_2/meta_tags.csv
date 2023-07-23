@@ -1,0 +1,17 @@
+key,value
+in_file,../data/in.wav
+out_file,../data/out.wav
+sample_time,0.1
+normalize,True
+num_channels,4
+dilation_depth,9
+num_repeat,2
+kernel_size,3
+batch_size,64
+learning_rate,0.003
+max_epochs,10
+gpus,-1
+tpu_cores,None
+cpu,True
+model,models/pedalnet/pedalnet.ckpt
+resume,False

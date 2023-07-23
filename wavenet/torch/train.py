@@ -1,5 +1,3 @@
-
-
 import pytorch_lightning as pl
 import argparse
 import sys
@@ -26,6 +24,7 @@ def main(args):
         log_every_n_steps=100,
         max_epochs=args.max_epochs,
     )
+
 
     trainer.fit(model)
     trainer.save_checkpoint(args.model)

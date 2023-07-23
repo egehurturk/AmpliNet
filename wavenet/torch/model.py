@@ -110,32 +110,32 @@ class PedalNet(pl.LightningModule):
     def __init__(self, hparams):
         super(PedalNet, self).__init__()
         self.wavenet = WaveNet(
-            num_channels=hparams.num_channels,
-            dilation_depth=hparams.dilation_depth,
-            num_repeat=hparams.num_repeat,
-            kernel_size=hparams.kernel_size,
+            num_channels=hparams['num_channels'],
+            dilation_depth=hparams['dilation_depth'],
+            num_repeat=hparams['num_repeat'],
+            kernel_size=hparams['kernel_size'],
         )
         self.hparams = hparams
 
     def prepare_data(self):
         ds = lambda x, y: TensorDataset(torch.from_numpy(x), torch.from_numpy(y))
-        data = pickle.load(open(os.path.dirname(self.hparams.model) + "/data.pickle", "rb"))
+        data = pickle.load(open(os.path.dirname(self.hparams['model']) + "/data.pickle", "rb"))
         self.train_ds = ds(data["x_train"], data["y_train"])
         self.valid_ds = ds(data["x_valid"], data["y_valid"])
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.wavenet.parameters(), lr=self.hparams.learning_rate)
+        return torch.optim.Adam(self.wavenet.parameters(), lr=self.hparams['learning_rate'])
 
     def train_dataloader(self):
         return DataLoader(
             self.train_ds,
             shuffle=True,
-            batch_size=self.hparams.batch_size,
+            batch_size=self.hparams['batch_size'],
             num_workers=4,
         )
 
     def val_dataloader(self):
-        return DataLoader(self.valid_ds, batch_size=self.hparams.batch_size, num_workers=4)
+        return DataLoader(self.valid_ds, batch_size=self.hparams['batch_size'], num_workers=4)
 
     def forward(self, x):
         return self.wavenet(x)
